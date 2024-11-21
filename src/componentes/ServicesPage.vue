@@ -1,4 +1,3 @@
-<!-- src/components/ServicesPage.vue -->
 <template>
   <div>
     <!-- Seção de Lanches -->
@@ -9,7 +8,6 @@
           <img :src="service.image" :alt="service.title" class="service-image" />
           <h3>{{ service.title }}</h3>
           <p>{{ service.description }}</p>
-          <!-- Botão que abre o pop-up -->
           <button @click="abrirPopup(service.items)">Saiba mais</button>
         </div>
       </div>
@@ -50,6 +48,8 @@
           <div class="card" v-for="(item, index) in itensPopUp" :key="index">
             <h3>{{ item.nome }}</h3>
             <p>Preço: R$ {{ item.preco.toFixed(2) }}</p>
+            <!-- Botão de adicionar ao carrinho -->
+            <button @click="adicionarAoCarrinho(item)">Adicionar ao Carrinho</button>
           </div>
         </div>
         <button @click="fecharPopup" class="fechar">Fechar</button>
@@ -58,13 +58,17 @@
   </div>
 </template>
 
-
 <script>
+import { mapMutations } from 'vuex';
 
 export default {
   name: 'ServicesPage',
   data() {
     return {
+
+
+
+
       // Lanches com itens detalhados
       lanches: [
         {
@@ -137,22 +141,29 @@ export default {
     };
   },
 
+
   methods: {
+
+    ...mapMutations(['adicionarAoCarrinho']), // Usando mutation do Vuex para adicionar ao carrinho
+    // Abre o pop-up com os itens fornecidos
     abrirPopup(items) {
-      // Define os itens a serem exibidos no pop-up
       this.itensPopUp = items;
       this.popupAberto = true;
     },
+    // Fecha o pop-up e limpa os itens
     fecharPopup() {
-      // Fecha o pop-up e limpa os itens
       this.popupAberto = false;
       this.itensPopUp = [];
     },
-  },
+
+
+
+
+  }
 };
 
-
 </script>
+
 
 <style scoped>
 /* Estilização básica */

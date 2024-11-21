@@ -79,7 +79,7 @@ export default {
     background-position: center; /* Centraliza a imagem */
     background-repeat: no-repeat; /* Evita repetições */
     width: 100%; /* Largura total */
-   height: 350px;
+   height: 400px;
 
 
 

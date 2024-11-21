@@ -1,9 +1,9 @@
 // src/router.js
 import Vue from 'vue';
 import Router from 'vue-router';
-import MyPage from './componentes/MyPage.vue';
-import AboutPage from './componentes/AboutPage.vue';
-import ServicesPage from './componentes/ServicesPage.vue';
+import MyPage from '@/componentes/MyPage.vue';
+import AboutPage from '@/componentes/AboutPage.vue';
+import ServicesPage from '@/componentes/ServicesPage.vue';
 
 Vue.use(Router);
 

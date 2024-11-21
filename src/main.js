@@ -1,20 +1,18 @@
 // src/main.js
-import { createApp } from 'vue';
+import { createApp } from 'vue';  // Correção: Usando a API do Vue 3
 import App from './App.vue';
+import store from './store'; // Importa o Vuex Store
 
-
-// Importando o Vue Router
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';  // Importando o Vue Router
 
 import 'bootstrap';  // Adiciona o JavaScript necessário para o carrossel e outros componentes interativos
-
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './assets/styles.css'
+import 'bootstrap/dist/css/bootstrap.min.css';  // Estilos do Bootstrap
+import './assets/styles.css';  // Estilos personalizados
 
 // Importando os componentes das páginas
-import MyPage from './componentes/MyPage.vue';
-import AboutPage from './componentes/AboutPage.vue';
-import ServicesPage from './componentes/ServicesPage.vue';
+import MyPage from '@/componentes/MyPage.vue';
+import AboutPage from '@/componentes/AboutPage.vue';
+import ServicesPage from '@/componentes/ServicesPage.vue';
 
 // Definindo as rotas
 const routes = [
@@ -31,5 +29,6 @@ const router = createRouter({
 
 // Criando a aplicação Vue e passando o router
 createApp(App)
+    .use(store)  // Usando o Vuex (store)
     .use(router) // Registrando o Vue Router
     .mount('#app'); // Montando a aplicação no elemento #app

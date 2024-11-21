@@ -1,13 +1,12 @@
-<!-- src/App.vue -->
 <template>
-<!--Navegação-->
+  <!-- Navegação -->
   <div>
     <header>
       <nav class="navbar navbar-expand-lg bg-primary fixed-top">
         <div class="container-fluid">
-          <a><router-link to="/" class="nav-link " aria-current="page"><img class="logo me-" :src="require('@/assets/img/LogoLanche.jpg')" alt="logo" height="50"></router-link>
-
-          </a>
+          <router-link to="/" class="nav-link">
+            <img class="logo me-" :src="require('@/assets/img/LogoLanche.jpg')" alt="logo" height="50">
+          </router-link>
           <button
               class="navbar-toggler"
               type="button"
@@ -20,30 +19,22 @@
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarNavDropdown">
-
-
-            <ul class="icones  navbar-nav top-50">
+            <ul class="icones navbar-nav top-50">
               <li class="nav-item">
-
-              </li>
-              <li class="nav-item">
-                <a href="#" class="rede-link">
+                <a href="https://wa.me/qr/QP5ZQKUWJFJZI1" class="rede-link">
                   <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" class="rede-icon" />
-
                 </a>
               </li>
               <li class="nav-item">
                 <a href="https://www.instagram.com/pastelaria_flor_da_chapada?igsh=ZXFiMm82OW43dXV4" class="rede-link">
                   <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" class="rede-icon" />
                 </a>
-
               </li>
-
             </ul>
 
             <ul class="navbar-nav">
               <li class="nav-item">
-                <router-link to="/" class="nav-link " aria-current="page">Home</router-link>
+                <router-link to="/" class="nav-link" aria-current="page">Home</router-link>
               </li>
               <li class="nav-item">
                 <router-link to="/sobre" class="nav-link">Sobre</router-link>
@@ -51,7 +42,6 @@
               <li class="nav-item">
                 <router-link to="/servicos" class="nav-link">Cardápio</router-link>
               </li>
-
               <li class="nav-item dropdown">
                 <a
                     class="nav-link dropdown-toggle"
@@ -71,178 +61,164 @@
             </ul>
           </div>
         </div>
+        <div>
+          <!-- Ícone do Carrinho -->
+          <section>
+            <div>
+              <div @click="mostrarPopup" class="icone-carrinho">
+                <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="Carrinho" class="rede-icon" />
+                <span class="contador">{{ carrinho.length }}</span> <!-- Exibe a quantidade de itens -->
+                <!-- Notificação -->
+                <span class="contador" v-if="carrinho.length > 0">{{ carrinho.length }}</span>
+              </div>
 
-        <!-- Exibe o carrinho -->
-        <section >
-          <div>
-            <!-- Ícone do Carrinho -->
-            <div @click="mostrarPopup" class="icone-carrinho">
-              <img  src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="Grocery Store Icon" class="rede-icon" />
-              />
-              <span class="contador">{{ carrinho.length }}</span> <!-- Exibe a quantidade de itens -->
-            </div>
+              <!-- Pop-up do Carrinho -->
+              <div v-if="popupAberto" class="popup">
+                <div class="popup-conteudo">
+                  <h3>Itens no Carrinho</h3>
+                  <ul>
+                    <li v-for="(item, index) in carrinho" :key="index">
+                      <strong>{{ item.nome }}</strong> - R$ {{ item.preco.toFixed(2) }}
+                      <button @click="removerCarrinho(index)">Remover</button>
+                    </li>
+                  </ul>
+                  <p><strong>Total: R$ {{ total }}</strong></p>
+                  <button @click="fecharPopup">Fechar</button>
 
-            <!-- Pop-up do Carrinho -->
-            <div v-if="popupAberto" class="popup">
-              <div class="popup-conteudo">
-                <h3>Itens no Carrinho</h3>
-                <ul>
-                  <li v-for="(item, index) in carrinho" :key="index">
-                    <strong>{{ item.nome }}</strong> - R$ {{ item.preco }}
-                    <button @click="removerCarrinho(index)">Remover</button>
-                  </li>
-                </ul>
-                <p><strong>Total: R$ {{ total }}</strong></p>
-                <button @click="fecharPopup">Fechar</button>
+                  <!-- Botão para Enviar Pedido via WhatsApp -->
+                  <button @click="irParaWhatsApp" class="btn btn-success mt-3">Enviar Pedido via WhatsApp</button>
+                </div>
               </div>
             </div>
-            <!-- Lista de produtos -->
-            <div class="produtos">
-              <div v-for="produto in produtos" :key="produto.id" class="produto">
-              </div>
-            </div>
-
-
-          </div>
-        </section>
+          </section>
+        </div>
       </nav>
     </header>
     <router-view></router-view>
 
-
-
-    <!--carrinho de compras-->
-
-    <section class="produtos-secao">
-      <h2>Produtos</h2>
-      <div class="produto" v-for="produto in produtos" :key="produto.id">
-        <h3>{{ produto.nome }}</h3>
-        <p>Preço: R$ {{ produto.preco }}</p>
-        <button @click="adicionarCarrinho(produto)">Adicionar ao Carrinho</button>
+    <!-- Rodapé -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div class="footer-section sobre">
+          <h3 class="footer-titulo">Flor da Chapada</h3>
+          <p class="footer-descricao">
+            Um lugar especial para saborear o melhor da Chapada Diamantina. Lanches frescos, ingredientes locais e um ambiente acolhedor.
+          </p>
+        </div>
+        <div class="footer-section links">
+          <h3 class="footer-titulo">Links Úteis</h3>
+          <ul class="footer-links">
+            <li> <router-link to="/sobre" class="nav-link">Sobre Nós</router-link></li>
+            <li><router-link to="/servicos" class="nav-link">Cardápio</router-link></li>
+            <li><a href="#opinions">Opiniões</a></li>
+            <li><a href="#contact">Contato</a></li>
+          </ul>
+        </div>
+        <div class="footer-section contato">
+          <h3 class="footer-titulo">Fale Conosco</h3>
+          <p><strong>Email:</strong> contato@flordachapada.com</p>
+          <p><strong>Telefone:</strong> (71) 99290-1499</p>
+          <div class="footer-redes">
+            <a href="#" class="rede-link">
+              <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" class="rede-icon" />
+            </a>
+            <a href="https://www.instagram.com/pastelaria_flor_da_chapada?igsh=ZXFiMm82OW43dXV4" class="rede-link">
+              <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" class="rede-icon" />
+            </a>
+          </div>
+        </div>
       </div>
-    </section>
 
-
-
-
-
-    <!--    Rodapé-->
+      <div class="footer-creditos">
+        <p>&copy; 2024 Flor da Chapada. Todos os direitos reservados.</p>
+      </div>
+    </footer>
   </div>
-
-      <footer class="footer">
-        <div class="footer-container">
-          <!-- Logo e Sobre -->
-          <div class="footer-section sobre">
-            <h3 class="footer-titulo">Flor da Chapada</h3>
-            <p class="footer-descricao">
-              Um lugar especial para saborear o melhor da Chapada Diamantina. Lanches frescos, ingredientes locais e um ambiente acolhedor.
-            </p>
-          </div>
-
-          <!-- Links Úteis -->
-          <div class="footer-section links">
-            <h3 class="footer-titulo">Links Úteis</h3>
-            <ul class="footer-links">
-              <li><a href="#about">Sobre Nós</a></li>
-              <li> <router-link to="/servicos" class="nav-link">Cardápio</router-link></li>
-              <li><a href="#opinions">Opiniões</a></li>
-              <li><a href="#contact">Contato</a></li>
-            </ul>
-          </div>
-
-          <!-- Redes Sociais e Contato -->
-          <div class="footer-section contato">
-            <h3 class="footer-titulo">Fale Conosco</h3>
-            <p><strong>Email:</strong> contato@flordachapada.com</p>
-            <p><strong>Telefone:</strong> (71) 99290-1499</p>
-            <div class="footer-redes">
-
-
-
-                <a href="#" class="rede-link">
-                <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" class="rede-icon" />
-
-                </a>
-
-                <a href="https://www.instagram.com/pastelaria_flor_da_chapada?igsh=ZXFiMm82OW43dXV4" class="rede-link">
-                  <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" class="rede-icon" />
-                </a>
-
-
-
-            </div>
-          </div>
-        </div>
-
-        <div class="footer-creditos">
-          <p>&copy; 2024 Flor da Chapada. Todos os direitos reservados.</p>
-        </div>
-      </footer>
-
 </template>
-
-
-
 <script>
-  // Importa os componentes que serão usados nas rotas
-  import MyPage from './componentes/MyPage.vue';
-  import AboutPage from './componentes/AboutPage.vue';
-  import ServicesPage from './componentes/ServicesPage.vue';
+import MyPage from "@/componentes/MyPage.vue";
+import AboutPage from "@/componentes/AboutPage.vue";
+import ServicesPage from "@/componentes/ServicesPage.vue";
+import { mapState, mapMutations } from "vuex";
 
-  export default {
-  name: 'App',
+export default {
+  name: "App",
   componentes: {
-  MyPage,
-  AboutPage,
-  ServicesPage,
-},
-    data() {
-      return {
-        produtos: [
-          { id: 1, nome: 'Produto 1', preco: 10 },
+    MyPage,
+    AboutPage,
+    ServicesPage,
+  },
+  data() {
+    return {
+      popupAberto: false, // Estado local do popup
+    };
+  },
+  computed: {
+    ...mapState(["carrinho"]), // Pega o estado global do carrinho
+    total() {
+      // Calcula o total diretamente do estado do Vuex
+      return this.carrinho.reduce((acc, item) => acc + item.preco, 0).toFixed(2);
+    },
+  },
+  methods: {
+    ...mapMutations(["removerDoCarrinho"]), // Mapeia a mutation para ser usada no componente
 
-        ],
-        carrinho: [],
-        popupAberto: false,
-      };
+    removerCarrinho(index) {
+      this.removerDoCarrinho(index); // Chama a mutation para remover o item
     },
-    computed: {
-      total() {
-        return this.carrinho.reduce((acc, item) => acc + item.preco, 0).toFixed(2);
-      },
+    ...mapMutations(["adicionarAoCarrinho", "removerDoCarrinho"]), // Mapeia mutations do Vuex
+    // Controle do popup
+    mostrarPopup() {
+      this.popupAberto = true;
     },
-    methods: {
-      adicionarCarrinho(produto) {
-        this.carrinho.push(produto);
-        this.salvarCarrinho();
-      },
-      removerCarrinho(index) {
-        this.carrinho.splice(index, 1);
-        this.salvarCarrinho();
-      },
-      salvarCarrinho() {
-        localStorage.setItem('carrinho', JSON.stringify(this.carrinho));
-      },
-      carregarCarrinho() {
-        const carrinhoSalvo = JSON.parse(localStorage.getItem('carrinho'));
-        if (carrinhoSalvo) {
-          this.carrinho = carrinhoSalvo;
-        }
-      },
-      mostrarPopup() {
-        this.popupAberto = true;
-      },
-      fecharPopup() {
-        this.popupAberto = false;
-      },
+    fecharPopup() {
+      this.popupAberto = false;
     },
-    created() {
-      this.carregarCarrinho();
+
+    gerarMensagem() {
+      let mensagem = "Olá, gostaria de fazer o seguinte pedido:\n";
+      this.carrinho.forEach((item, ) => {
+        mensagem += ` ${item.nome} - R$ ${item.preco.toFixed(2)}\n`;
+      });
+      mensagem += `\nTotal: R$ ${this.total}`;
+      return encodeURIComponent(mensagem); // Codifica a mensagem para uso na URL
     },
-  };
+    gerarLinkWhatsApp() {
+      const numeroWhatsApp = "557192901499"; // Substitua pelo número do WhatsApp
+      const mensagem = this.gerarMensagem();
+      return `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensagem}`;
+    },
+    irParaWhatsApp() {
+      const link = this.gerarLinkWhatsApp();
+      window.open(link, "_blank"); // Abre o link em uma nova aba
+    },
+  },
+
+
+};
 </script>
 
+
 <style>
+
+
+.contador {
+  position: absolute;
+  top: 10px; /* Ajuste a posição */
+  right: 10px; /* Ajuste a posição */
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Garante que fica acima de outros elementos */
+}
+
 
 .popup {
   position: absolute; /* ou fixed, dependendo do comportamento desejado */
