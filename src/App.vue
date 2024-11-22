@@ -21,10 +21,11 @@
           <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="icones navbar-nav top-50">
               <li class="nav-item">
-                <a href="https://wa.me/qr/QP5ZQKUWJFJZI1" class="rede-link">
+                <a @click.prevent="irParaWhatsApp" class="rede-link">
                   <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" class="rede-icon" />
                 </a>
               </li>
+
               <li class="nav-item">
                 <a href="https://www.instagram.com/pastelaria_flor_da_chapada?igsh=ZXFiMm82OW43dXV4" class="rede-link">
                   <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" class="rede-icon" />
@@ -71,7 +72,6 @@
                 <!-- Notificação -->
                 <span class="contador" v-if="carrinho.length > 0">{{ carrinho.length }}</span>
               </div>
-
               <!-- Pop-up do Carrinho -->
               <div v-if="popupAberto" class="popup">
                 <div class="popup-conteudo">
@@ -85,10 +85,50 @@
                   <p><strong>Total: R$ {{ total }}</strong></p>
                   <button @click="fecharPopup">Fechar</button>
 
-                  <!-- Botão para Enviar Pedido via WhatsApp -->
-                  <button @click="irParaWhatsApp" class="btn btn-success mt-3">Enviar Pedido via WhatsApp</button>
+
+
+                  <!-- Botão com ícone "+" para prévia do comprovante -->
+                  <button @click="abrirPreviaComprovante" class="btn btn-info mt-3">
+                    <span>+</span> Prévia do Comprovante
+                  </button>
+                </div>
+
+                <!-- Pop-up da Prévia do Comprovante -->
+
+                <div v-if="popupPreviaAberto" class="popup">
+                  <div class="popup-conteudo">
+                    <h3>Prévia do Comprovante</h3>
+                    <div id="comprovante-container" style="padding: 20px; border: 1px solid #ccc; margin-top: 20px;">
+                      <h2>Comprovante de Pedido</h2>
+                      <ul>
+                        <li v-for="(item, index) in carrinho" :key="index">
+                          {{ item.nome }} - R$ {{ item.preco.toFixed(2) }}
+                        </li>
+                      </ul>
+                      <p><strong>Total:</strong> R$ {{ total }}</p>
+                      <p><strong>Data:</strong> {{ new Date().toLocaleString() }}</p>
+                    </div>
+
+                    <!-- Botões de Ação para Baixar PDF e Imagem -->
+                    <div class="botoes-acao mt-3">
+                      <button @click="gerarComprovantePDF" class="btn btn-primary">Baixar PDF</button>
+                      <button @click="gerarComprovanteImagem" class="btn btn-secondary">Baixar Imagem</button>
+                    </div>
+
+                    <!-- Botão para Enviar o Comprovante via WhatsApp -->
+                    <button
+                        @click="irParaWhatsAppComprovante"
+                        class="btn btn-success mt-3"
+                        :disabled="!comprovanteURL" > <!-- Desativa se nenhum comprovante foi gerado -->
+                    Enviar Comprovante via WhatsApp
+                    </button>
+
+                    <!-- Botão para Fechar o Pop-up da Prévia -->
+                    <button @click="fecharPreviaComprovante" class="btn btn-danger mt-3">Fechar Prévia</button>
+                  </div>
                 </div>
               </div>
+
             </div>
           </section>
         </div>
@@ -136,10 +176,12 @@
   </div>
 </template>
 <script>
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { mapState, mapMutations } from "vuex";
 import MyPage from "@/componentes/MyPage.vue";
 import AboutPage from "@/componentes/AboutPage.vue";
 import ServicesPage from "@/componentes/ServicesPage.vue";
-import { mapState, mapMutations } from "vuex";
 
 export default {
   name: "App",
@@ -150,51 +192,137 @@ export default {
   },
   data() {
     return {
-      popupAberto: false, // Estado local do popup
+      popupAberto: false,
+      popupPreviaAberto: false, // Controle do pop-up da prévia
     };
   },
   computed: {
-    ...mapState(["carrinho"]), // Pega o estado global do carrinho
+    ...mapState(["carrinho"]),
     total() {
-      // Calcula o total diretamente do estado do Vuex
       return this.carrinho.reduce((acc, item) => acc + item.preco, 0).toFixed(2);
     },
   },
   methods: {
-    ...mapMutations(["removerDoCarrinho"]), // Mapeia a mutation para ser usada no componente
+      ...mapMutations(["removerDoCarrinho"]), // Mapeia a mutation para ser usada no componente
 
-    removerCarrinho(index) {
-      this.removerDoCarrinho(index); // Chama a mutation para remover o item
-    },
-    ...mapMutations(["adicionarAoCarrinho", "removerDoCarrinho"]), // Mapeia mutations do Vuex
-    // Controle do popup
+      removerCarrinho(index) {
+        this.removerDoCarrinho(index); // Chama a mutation para remover o item
+      },
+      ...mapMutations(["adicionarAoCarrinho", ]), // Mapeia mutations do Vuex
+      // Controle do popup
+
     mostrarPopup() {
       this.popupAberto = true;
     },
     fecharPopup() {
       this.popupAberto = false;
     },
-
     gerarMensagem() {
-      let mensagem = "Olá, gostaria de fazer o seguinte pedido:\n";
-      this.carrinho.forEach((item, ) => {
-        mensagem += ` ${item.nome} - R$ ${item.preco.toFixed(2)}\n`;
-      });
-      mensagem += `\nTotal: R$ ${this.total}`;
-      return encodeURIComponent(mensagem); // Codifica a mensagem para uso na URL
-    },
+      const agora = new Date();
+      const hora = agora.getHours();
+
+      // Definir saudação com base no horário
+      let saudacao;
+      if (hora < 12) {
+        saudacao = "Bom dia";
+      } else if (hora < 18) {
+        saudacao = "Boa tarde";
+      } else {
+        saudacao = "Boa noite";
+      }
+
+      // Criar a mensagem inicial
+      const mensagem = `${saudacao}, gostaria de iniciar um pedido.\n`;
+      return encodeURIComponent(mensagem); // Codificar para URL
+    }
+    ,
     gerarLinkWhatsApp() {
-      const numeroWhatsApp = "557192901499"; // Substitua pelo número do WhatsApp
+      const numeroWhatsApp = "557192901499";
       const mensagem = this.gerarMensagem();
       return `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensagem}`;
     },
     irParaWhatsApp() {
       const link = this.gerarLinkWhatsApp();
+      window.open(link, "_blank");
+    },
+
+
+    //teste
+    gerarLinkWhatsAppComprovante() {
+      const numeroWhatsApp = "557192901499"; // Substitua pelo número do WhatsApp
+      const mensagem = encodeURIComponent(
+          `Olá, segue as informações  do meu pedido:\n\nLink para baixar: ${this.comprovanteURL}`
+      );
+
+      return `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensagem}`;
+    },
+    irParaWhatsAppComprovante() {
+      const link = this.gerarLinkWhatsAppComprovante();
       window.open(link, "_blank"); // Abre o link em uma nova aba
     },
+
+
+
+
+
+
+
+    // Controle do pop-up da prévia do comprovante
+    abrirPreviaComprovante() {
+      this.popupPreviaAberto = true;
+    },
+    fecharPreviaComprovante() {
+      this.popupPreviaAberto = false;
+    },
+
+    // Geração de PDF
+    gerarComprovantePDF() {
+      const doc = new jsPDF();
+      let linhaInicial = 20;
+
+      doc.setFontSize(16);
+      doc.text("Comprovante de Pedido", 10, linhaInicial);
+      linhaInicial += 10;
+
+      this.carrinho.forEach((item, index) => {
+        doc.text(`${index + 1}. ${item.nome} - R$ ${item.preco.toFixed(2)}`, 10, linhaInicial);
+        linhaInicial += 10;
+      });
+
+      linhaInicial += 10;
+      doc.setFontSize(14);
+      doc.text(`Total: R$ ${this.total}`, 10, linhaInicial);
+
+      linhaInicial += 10;
+      doc.setFontSize(10);
+      doc.text(`Data: ${new Date().toLocaleString()}`, 10, linhaInicial);
+
+      const pdfBlob = doc.output("blob");
+      const pdfURL = URL.createObjectURL(pdfBlob);
+
+      // Salva o URL do PDF no estado para uso posterior
+      this.comprovanteURL = pdfURL;
+
+      doc.save("comprovante.pdf");
+    },
+
+    // Geração de Imagem
+    gerarComprovanteImagem() {
+      const element = document.getElementById("comprovante-container");
+      html2canvas(element).then((canvas) => {
+        const imageURL = canvas.toDataURL("image/png");
+
+        // Salva o URL da imagem no estado para uso posterior
+        this.comprovanteURL = imageURL;
+
+        const link = document.createElement("a");
+        link.href = imageURL;
+        link.download = "comprovante.png";
+        link.click();
+      });
+    },
+
   },
-
-
 };
 </script>
 

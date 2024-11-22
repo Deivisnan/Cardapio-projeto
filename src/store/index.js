@@ -20,6 +20,7 @@ export default createStore({
     },
     getters: {
         totalCarrinho: (state) => {
+
             return state.carrinho.reduce((total, item) => total + item.preco, 0);
         },
     },

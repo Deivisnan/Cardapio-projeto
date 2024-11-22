@@ -144,6 +144,7 @@ export default {
 
   methods: {
 
+
     ...mapMutations(['adicionarAoCarrinho']), // Usando mutation do Vuex para adicionar ao carrinho
     // Abre o pop-up com os itens fornecidos
     abrirPopup(items) {
