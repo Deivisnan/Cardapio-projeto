@@ -10,6 +10,7 @@
   "dependencies": {
     "bootstrap": "^5.3.3",
     "core-js": "^3.8.3",
+    "firebase": "^11.0.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
     "vue": "^3.2.13",

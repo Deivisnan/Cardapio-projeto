@@ -66,12 +66,13 @@
           <!-- Ícone do Carrinho -->
           <section>
             <div>
-              <div @click="mostrarPopup" class="icone-carrinho">
+              <div @click="alternarPopup" class="icone-carrinho">
                 <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="Carrinho" class="rede-icon" />
                 <span class="contador">{{ carrinho.length }}</span> <!-- Exibe a quantidade de itens -->
                 <!-- Notificação -->
                 <span class="contador" v-if="carrinho.length > 0">{{ carrinho.length }}</span>
               </div>
+
               <!-- Pop-up do Carrinho -->
               <div v-if="popupAberto" class="popup">
                 <div class="popup-conteudo">
@@ -83,58 +84,78 @@
                     </li>
                   </ul>
                   <p><strong>Total: R$ {{ total }}</strong></p>
-                  <button @click="fecharPopup">Fechar</button>
+                  <button @click="alternarPopup" class="btn btn-secondary">Fechar</button>
 
-
-
-                  <!-- Botão com ícone "+" para prévia do comprovante -->
-                  <button @click="abrirPreviaComprovante" class="btn btn-info mt-3">
-                    <span>+</span> Prévia do Comprovante
-                  </button>
+                  <!-- Botão para Abrir Prévia do Comprovante -->
+                  <button @click="abrirPreviaComprovante"     class="btn btn-primary mt-3">Enviar pedido</button>
                 </div>
+              </div>
 
-                <!-- Pop-up da Prévia do Comprovante -->
+              <!-- Pop-up da Prévia do Comprovante -->
+              <!-- Pop-up da Prévia do Comprovante -->
+              <div v-if="popupPreviaAberto" class="popup">
+                <div class="popup-conteudo">
+                  <h3>Prévia do Comprovante</h3>
 
-                <div v-if="popupPreviaAberto" class="popup">
-                  <div class="popup-conteudo">
-                    <h3>Prévia do Comprovante</h3>
-                    <div id="comprovante-container" style="padding: 20px; border: 1px solid #ccc; margin-top: 20px;">
-                      <h2>Comprovante de Pedido</h2>
-                      <ul>
-                        <li v-for="(item, index) in carrinho" :key="index">
-                          {{ item.nome }} - R$ {{ item.preco.toFixed(2) }}
-                        </li>
-                      </ul>
-                      <p><strong>Total:</strong> R$ {{ total }}</p>
-                      <p><strong>Data:</strong> {{ new Date().toLocaleString() }}</p>
-                    </div>
+                  <!-- Mensagem de erro geral -->
+                  <p v-if="erroMensagem" class="alert alert-danger">{{ erroMensagem }}</p>
 
-                    <!-- Botões de Ação para Baixar PDF e Imagem -->
-                    <div class="botoes-acao mt-3">
-                      <button @click="gerarComprovantePDF" class="btn btn-primary">Baixar PDF</button>
-                      <button @click="gerarComprovanteImagem" class="btn btn-secondary">Baixar Imagem</button>
-                    </div>
+                  <!-- Campo Nome -->
+                  <label for="nomeUsuario">Digite seu nome:</label>
+                  <input
+                      id="nomeUsuario"
+                      v-model="nomeUsuario"
+                      type="text"
+                      class="form-control"
+                      placeholder="Seu Nome"
+                  />
+                  <p v-if="erroNome" class="text-danger">Por favor, preencha seu nome antes de continuar.</p>
 
-                    <!-- Botão para Enviar o Comprovante via WhatsApp -->
-                    <button
-                        @click="irParaWhatsAppComprovante"
-                        class="btn btn-success mt-3"
-                        :disabled="!comprovanteURL" > <!-- Desativa se nenhum comprovante foi gerado -->
-                    Enviar Comprovante via WhatsApp
-                    </button>
+                  <!-- Campo Endereço -->
+                  <label for="enderecoUsuario">Digite seu endereço:</label>
+                  <input
+                      id="enderecoUsuario"
+                      v-model="enderecoUsuario"
+                      type="text"
+                      class="form-control"
+                      placeholder="Seu Endereço"
+                  />
+                  <p v-if="erroEndereco" class="text-danger">Por favor, preencha seu endereço antes de continuar.</p>
 
-                    <!-- Botão para Fechar o Pop-up da Prévia -->
-                    <button @click="fecharPreviaComprovante" class="btn btn-danger mt-3">Fechar Prévia</button>
+                  <!-- Exibição do Comprovante -->
+                  <div id="comprovante-container" style="padding: 20px; border: 1px solid #ccc; margin-top: 20px;">
+                    <h2>Comprovante de Pedido</h2>
+                    <p><strong>Nome:</strong> {{ nomeUsuario || "Não informado" }}</p>
+                    <p><strong>Endereço:</strong> {{ enderecoUsuario || "Não informado" }}</p>
+                    <ul>
+                      <li v-for="(item, index) in carrinho" :key="index">
+                        {{ item.nome }} - R$ {{ item.preco.toFixed(2) }}
+                      </li>
+                    </ul>
+                    <p><strong>Total:</strong> R$ {{ total }}</p>
+                    <p><strong>Data:</strong> {{ new Date().toLocaleString() }}</p>
                   </div>
+
+                  <!-- Botões de ação -->
+                  <div class="botoes-acao mt-3">
+                    <button @click="gerarComprovantePDF" class="btn btn-primary">Baixar PDF</button>
+                    <button @click="gerarComprovanteImagem" class="btn btn-secondary">Baixar Imagem</button>
+                  </div>
+                  <button @click="fecharPreviaComprovante" class="btn btn-danger mt-3">Desistir do pedido</button>
                 </div>
               </div>
 
             </div>
           </section>
+
+
         </div>
       </nav>
     </header>
     <router-view></router-view>
+
+
+
 
     <!-- Rodapé -->
     <footer class="footer">
@@ -179,21 +200,18 @@
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { mapState, mapMutations } from "vuex";
-import MyPage from "@/componentes/MyPage.vue";
-import AboutPage from "@/componentes/AboutPage.vue";
-import ServicesPage from "@/componentes/ServicesPage.vue";
 
 export default {
   name: "App",
-  componentes: {
-    MyPage,
-    AboutPage,
-    ServicesPage,
-  },
+
   data() {
     return {
       popupAberto: false,
-      popupPreviaAberto: false, // Controle do pop-up da prévia
+      popupPreviaAberto: false,
+      nomeUsuario: "", // Nome do usuário
+      erroNome: false, // Indica se há um erro no preenchimento do nome
+      enderecoUsuario: "", // Endereço do usuário
+      erroEndereco: false, // Indica erro no endereço
     };
   },
   computed: {
@@ -211,11 +229,8 @@ export default {
       ...mapMutations(["adicionarAoCarrinho", ]), // Mapeia mutations do Vuex
       // Controle do popup
 
-    mostrarPopup() {
-      this.popupAberto = true;
-    },
-    fecharPopup() {
-      this.popupAberto = false;
+    alternarPopup() {
+      this.popupAberto = !this.popupAberto;  // Alterna entre verdadeiro e falso
     },
     gerarMensagem() {
       const agora = new Date();
@@ -265,10 +280,12 @@ export default {
 
 
 
-
-
     // Controle do pop-up da prévia do comprovante
     abrirPreviaComprovante() {
+      if (this.carrinho.length === 0) {
+        alert("Seu carrinho está vazio. Adicione itens antes de visualizar a prévia do comprovante.");
+        return; // Impede a execução do código abaixo
+      }
       this.popupPreviaAberto = true;
     },
     fecharPreviaComprovante() {
@@ -277,11 +294,41 @@ export default {
 
     // Geração de PDF
     gerarComprovantePDF() {
+      // Limpa mensagens de erro anteriores
+      this.erroMensagem = "";
+
+      // Valida o campo Nome
+      if (!this.nomeUsuario.trim()) {
+        this.erroNome = true;
+        this.erroMensagem = "Por favor, preencha o nome antes de gerar o PDF.";
+        return; // Sai da função se o nome não estiver preenchido
+      } else {
+        this.erroNome = false;
+      }
+
+      // Valida o campo Endereço
+      if (!this.enderecoUsuario.trim()) {
+        this.erroEndereco = true;
+        this.erroMensagem = "Por favor, preencha o endereço antes de gerar o PDF.";
+        return; // Sai da função se o endereço não estiver preenchido
+      } else {
+        this.erroEndereco = false;
+      }
+
+      // Gera o PDF se ambos os campos estiverem preenchidos
+      this.erroMensagem = ""; // Limpa mensagens de erro para seguir
+
       const doc = new jsPDF();
       let linhaInicial = 20;
 
       doc.setFontSize(16);
       doc.text("Comprovante de Pedido", 10, linhaInicial);
+      linhaInicial += 10;
+
+      doc.setFontSize(14);
+      doc.text(`Nome: ${this.nomeUsuario}`, 10, linhaInicial);
+      linhaInicial += 10;
+      doc.text(`Endereço: ${this.enderecoUsuario}`, 10, linhaInicial);
       linhaInicial += 10;
 
       this.carrinho.forEach((item, index) => {
@@ -297,32 +344,66 @@ export default {
       doc.setFontSize(10);
       doc.text(`Data: ${new Date().toLocaleString()}`, 10, linhaInicial);
 
-      const pdfBlob = doc.output("blob");
-      const pdfURL = URL.createObjectURL(pdfBlob);
-
-      // Salva o URL do PDF no estado para uso posterior
-      this.comprovanteURL = pdfURL;
-
       doc.save("comprovante.pdf");
-    },
+    }
+    ,
+
 
     // Geração de Imagem
     gerarComprovanteImagem() {
+      // Limpa mensagens de erro anteriores
+      this.erroMensagem = "";
+
+      // Valida o campo Nome
+      if (!this.nomeUsuario.trim()) {
+        this.erroNome = true;
+        this.erroMensagem = "Por favor, preencha o nome antes de gerar a imagem.";
+        return; // Sai da função se o nome não estiver preenchido
+      } else {
+        this.erroNome = false;
+      }
+
+      // Valida o campo Endereço
+      if (!this.enderecoUsuario.trim()) {
+        this.erroEndereco = true;
+        this.erroMensagem = "Por favor, preencha o endereço antes de gerar a imagem.";
+        return; // Sai da função se o endereço não estiver preenchido
+      } else {
+        this.erroEndereco = false;
+      }
+
+      // Gera a imagem se ambos os campos estiverem preenchidos
+      this.erroMensagem = ""; // Limpa mensagens de erro para seguir
+
       const element = document.getElementById("comprovante-container");
       html2canvas(element).then((canvas) => {
         const imageURL = canvas.toDataURL("image/png");
-
-        // Salva o URL da imagem no estado para uso posterior
-        this.comprovanteURL = imageURL;
-
         const link = document.createElement("a");
         link.href = imageURL;
         link.download = "comprovante.png";
         link.click();
       });
-    },
+    }
+    ,
 
-  },
+
+      // Exemplo de método para enviar o pedido
+
+      enviarPedido() {
+        if (this.carrinho.length === 0) {
+          alert("Seu carrinho está vazio. Adicione itens para enviar o pedido.");
+          return;  // Impede a execução do código abaixo se o carrinho estiver vazio
+        }
+
+        // Lógica para enviar o pedido
+        console.log("Pedido enviado:", this.carrinho);
+        // Aqui você pode adicionar o código de envio, como salvar o pedido, gerar comprovante, etc.
+      },
+
+
+    }
+
+
 };
 </script>
 
@@ -347,7 +428,6 @@ export default {
   z-index: 1000; /* Garante que fica acima de outros elementos */
 }
 
-
 .popup {
   position: absolute; /* ou fixed, dependendo do comportamento desejado */
   top: 50px; /* Ajuste para posicionar abaixo da barra de navegação */
@@ -358,7 +438,14 @@ export default {
   border-radius: 8px;
   z-index: 1000; /* Garante que ficará acima de outros elementos */
   width: 300px; /* Largura fixa para evitar alterações na interface */
+
+  /* Adicionando limites e rolagem */
+  max-height: 400px; /* Define uma altura máxima para o popup */
+  overflow-y: auto; /* Adiciona rolagem vertical */
+  overflow-x: scroll; /* Adiciona rolagem horizontal */
+  word-wrap: break-word; /* Evita que palavras muito longas quebrem o layout */
 }
+
 
 /* carrinho de compras */
 
